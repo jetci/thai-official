@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, NotFoundException } from '@nestjs/c
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 
-@Controller('api/v1/announcements')
+@Controller('announcements')
 export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 

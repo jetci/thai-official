@@ -24,5 +24,12 @@ model announcements {
   official_link          String?
   created_at             DateTime  @default(now())
 
-  @@map("announcements") // Map this model to the "announcements" table
+    @@map("announcements") // Map this model to the "announcements" table
+}
+
+model Subject {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  @@map("subjects")
 }

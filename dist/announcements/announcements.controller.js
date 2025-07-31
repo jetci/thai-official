@@ -56,7 +56,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AnnouncementsController.prototype, "create", null);
 exports.AnnouncementsController = AnnouncementsController = __decorate([
-    (0, common_1.Controller)('api/v1/announcements'),
+    (0, common_1.Controller)('announcements'),
     __metadata("design:paramtypes", [announcements_service_1.AnnouncementsService])
 ], AnnouncementsController);
 //# sourceMappingURL=announcements.controller.js.map
