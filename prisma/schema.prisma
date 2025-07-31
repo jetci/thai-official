@@ -33,3 +33,27 @@ model Subject {
 
   @@map("subjects")
 }
+
+// 1. User & Role Management
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // e.g., 'admin', 'staff', 'vip_member', 'general_member'
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  full_name     String?
+  role_id       Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  role Role @relation(fields: [role_id], references: [id])
+
+  @@map("users")
+}
