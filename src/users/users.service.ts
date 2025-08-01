@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -16,9 +16,22 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
-        full_name: createUserDto.fullName,
+        fullName: createUserDto.fullName,
         password_hash: hashedPassword,
-        role_id: defaultRoleId,
+        roleId: defaultRoleId,
+      },
+    });
+  }
+
+  async findOneById(id: number) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      // Select fields for security (don't send password_hash)
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        roleId: true,
       },
     });
   }
@@ -28,6 +41,4 @@ export class UsersService {
       where: { email },
     });
   }
-
-  // We will add findOne by ID later for fetching user profile
 }

@@ -1,3 +1,11 @@
+import { UsersService } from './users.service';
 export declare class UsersController {
-    getProfile(req: any): any;
+    private readonly usersService;
+    constructor(usersService: UsersService);
+    getProfile(req: any): Promise<{
+        id: number;
+        email: string;
+        fullName: string;
+        roleId: number;
+    }>;
 }
