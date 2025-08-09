@@ -64,6 +64,27 @@ describe('PositionsController', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('should call service.findAll and return the result', async () => {
+      const result = [{ id: 'pos_1', name: 'Admin', createdAt: new Date(), updatedAt: new Date() }];
+      mockPositionsService.findAll.mockResolvedValue(result);
+
+      await expect(controller.findAll()).resolves.toEqual(result);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('remove', () => {
+    it('should call service.remove and return the result', async () => {
+      const id = 'pos_123';
+      const result = { id, name: 'Deleted Position', createdAt: new Date(), updatedAt: new Date() };
+      mockPositionsService.remove.mockResolvedValue(result);
+
+      await expect(controller.remove(id)).resolves.toEqual(result);
+      expect(service.remove).toHaveBeenCalledWith(id);
+    });
+  });
+
   describe('update', () => {
     it('should call service.update and return the result', async () => {
       const id = 'pos_123';

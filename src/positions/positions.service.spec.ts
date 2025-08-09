@@ -46,6 +46,27 @@ describe('PositionsService', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('should return an array of positions', async () => {
+      const expectedResult = [{ id: 'pos_1', name: 'Admin', createdAt: new Date(), updatedAt: new Date() }];
+      prisma.position.findMany.mockResolvedValue(expectedResult);
+
+      await expect(service.findAll()).resolves.toEqual(expectedResult);
+      expect(prisma.position.findMany).toHaveBeenCalled();
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a position', async () => {
+      const id = 'pos_123';
+      const expectedResult = { id, name: 'Deleted Position', createdAt: new Date(), updatedAt: new Date() };
+      prisma.position.delete.mockResolvedValue(expectedResult);
+
+      await expect(service.remove(id)).resolves.toEqual(expectedResult);
+      expect(prisma.position.delete).toHaveBeenCalledWith({ where: { id } });
+    });
+  });
+
   describe('update', () => {
     it('should update a position', async () => {
       const id = 'pos_123';
