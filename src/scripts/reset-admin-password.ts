@@ -1,9 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
-
-async function main() {
+export async function main(prisma: PrismaClient) {
   const email = 'admin@example.com';
   const newPassword = 'password';
 
@@ -25,11 +23,19 @@ async function main() {
   }
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// istanbul ignore next
+async function run() {
+  if (process.env.NODE_ENV !== 'test') {
+    const prisma = new PrismaClient();
+    try {
+      await main(prisma);
+    } catch (e) {
+      console.error(e);
+      process.exit(1);
+    } finally {
+      await prisma.$disconnect();
+    }
+  }
+}
+
+run();
