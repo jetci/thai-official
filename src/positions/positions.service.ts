@@ -15,18 +15,18 @@ export class PositionsService {
     return this.prisma.position.findMany();
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.prisma.position.findUnique({ where: { id } });
   }
 
-  update(id: number, updatePositionDto: UpdatePositionDto) {
+  update(id: string, updatePositionDto: UpdatePositionDto) {
     return this.prisma.position.update({
       where: { id },
       data: updatePositionDto,
     });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.prisma.position.delete({ where: { id } });
   }
 }

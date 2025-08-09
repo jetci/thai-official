@@ -1,34 +1,30 @@
-import { IsNotEmpty, IsString, IsInt, IsArray, ValidateNested, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsArray,
+  ValidateNested,
+  ArrayMinSize,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-
-class CreateChoiceDto {
-  @IsString()
-  @IsNotEmpty()
-  choice_text: string;
-
-  @IsNotEmpty()
-  is_correct: boolean;
-}
+import { CreateChoiceDto } from './create-choice.dto';
 
 export class CreateQuestionDto {
   @IsString()
   @IsNotEmpty()
-  question_text: string;
+  title: string;
 
-  @IsInt()
-  subject_id: number;
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  subjectId: string;
 
   @IsArray()
   @ValidateNested({ each: true })
+  @ArrayMinSize(2, { message: 'A question must have at least two choices.' })
   @Type(() => CreateChoiceDto)
   choices: CreateChoiceDto[];
-
-  @IsOptional()
-  @IsEnum(['easy', 'medium', 'hard'])
-  difficulty?: string;
-
-  @IsArray()
-  @IsInt({ each: true })
-  @IsOptional()
-  position_ids?: number[];
 }

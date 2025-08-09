@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,102 +10,111 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. Add the Announcement model here
-model announcements {
-  id                     Int       @id @default(autoincrement())
-  title                  String
-  agency                 String? // Optional field
-  details                String? // Optional field
-  application_start_date DateTime?
-  application_end_date   DateTime?
-  official_link          String?
-  created_at             DateTime  @default(now())
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  password       String
+  role           Role           @default(USER)
+  profile        Profile?
+  subscriptions  Subscription[]
+  announcements  Announcement[]
+  refreshTokens  RefreshToken[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
 
-    @@map("announcements") // Map this model to the "announcements" table
+model RefreshToken {
+  id                 String    @id @default(cuid())
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+  jti                String    @unique
+  tokenHash          String    @db.Text
+  expiresAt          DateTime
+  revokedAt          DateTime?
+  replacedByToken    RefreshToken? @relation("TokenReplacement", fields: [replacedByTokenId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replacedByTokenId  String?       @unique
+  previousTokens     RefreshToken[] @relation("TokenReplacement")
+  createdAt          DateTime  @default(now())
+  userAgent          String?
+  ip                 String?
+
+  @@index([userId])
+}
+
+model Profile {
+  id        String  @id @default(cuid())
+  firstName String?
+  lastName  String?
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String  @unique
 }
 
 model Subject {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  questions Question[]
-
-  @@map("subjects")
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  questions   Question[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
-// 1. User & Role Management
-
-model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique // e.g., 'admin', 'staff', 'vip_member', 'general_member'
-  users User[]
-
-  @@map("roles")
+model Question {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  choices   Choice[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model User {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  password_hash String
-  fullName      String?  @map("full_name")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+model Choice {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
 
-  // Relations
-  roleId Int    @map("role_id")
-  role   Role   @relation(fields: [roleId], references: [id])
-
-  @@map("users")
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  published Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Position {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  questions PositionQuestion[]
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-// ตารางเก็บคำถาม
-model Question {
-  id             Int                @id @default(autoincrement())
-  question_text  String
-  // questionType   String             @default("multiple_choice") // Renamed from questionType to match DTO
-  difficulty     String?            @default("medium")
-  created_at     DateTime           @default(now())
-  updated_at     DateTime           @updatedAt
-
-  subject_id Int
-  subject    Subject @relation(fields: [subject_id], references: [id])
-
-  choices   Choice[]
-  positions PositionQuestion[]
-
-  // For consistency with DTOs and service logic
-  @@map("questions")
+model Subscription {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @unique // A user can only have one subscription
+  plan      String // e.g., 'FREE', 'PREMIUM'
+  status    String // e.g., 'ACTIVE', 'CANCELED'
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
-// ตารางเก็บตัวเลือกสำหรับคำถาม
-model Choice {
-  id          Int     @id @default(autoincrement())
-  choice_text String
-  is_correct  Boolean @default(false)
-
-  question_id Int
-  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
-
-  @@map("choices")
+enum Role {
+  USER
+  ADMIN
+  STAFF
+  VIP
 }
 
-// ตารางเชื่อมระหว่าง Position และ Question (Many-to-Many)
-model PositionQuestion {
-  position_id Int
-  position    Position @relation(fields: [position_id], references: [id], onDelete: Cascade)
 
-  question_id Int
-  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
-
-  @@id([position_id, question_id])
-  @@map("position_questions")
-}

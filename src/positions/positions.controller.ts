@@ -5,15 +5,16 @@ import { UpdatePositionDto } from './dto/update-position.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/enums/role.enum';
+import { Role } from '@prisma/client';
 
 @Controller('positions')
+@UseGuards(JwtAuthGuard)
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   create(@Body() createPositionDto: CreatePositionDto) {
     return this.positionsService.create(createPositionDto);
   }
@@ -25,20 +26,20 @@ export class PositionsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.positionsService.findOne(+id);
+    return this.positionsService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   update(@Param('id') id: string, @Body() updatePositionDto: UpdatePositionDto) {
-    return this.positionsService.update(+id, updatePositionDto);
+    return this.positionsService.update(id, updatePositionDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
-    return this.positionsService.remove(+id);
+    return this.positionsService.remove(id);
   }
 }

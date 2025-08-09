@@ -160,7 +160,7 @@ enum Role {
 | **Positions**         |         ไม่มี          | - สร้าง CRUD endpoints ทั้งหมด<br>- เขียน Unit/E2E tests |      ปานกลาง      | พัฒนาพร้อมกับ `Questions` v2                            |
 | **Announcements**     |         ไม่มี          | - สร้าง CRUD endpoints ทั้งหมด<br>- เขียน Unit/E2E tests |       ต่ำ        | พัฒนาในเฟสถัดไป                                           |
 | **Subscriptions**     |         ไม่มี          | - สร้าง Logic จัดการ plan<br>- เชื่อมต่อ Payment Gateway |       ต่ำ        | พัฒนาในเฟสถัดไป                                           |
-| **API Versioning**    |         ไม่มี          | - Implement global prefix `/api/v1`                    |      ปานกลาง      | ตั้งค่าใน `main.ts`                                       |
+| **API Versioning**    |           มี            | - เรียบร้อยแล้ว                                        |       -          | -                                                         |
 | **OpenAPI Spec**      |           มี            | - อัปเดตให้ตรงกับทุก endpoints และ DTOs                 |       ต่ำ        | Generate อัตโนมัติหลังการพัฒนาทุกครั้ง                     |
 
 ## 9. แผนการพัฒนา (Roadmap)
@@ -173,7 +173,7 @@ enum Role {
     -   [ ] สร้าง CRUD endpoints สำหรับจัดการโปรไฟล์ผู้ใช้.
     -   [ ] เขียน Unit Tests และ E2E Tests.
 3.  **API Versioning:**
-    -   [ ] เพิ่ม `/api/v1` เป็น prefix สำหรับทุก routes.
+    -   [x] เพิ่ม `/api/v1` เป็น prefix สำหรับทุก routes.
 
 **Phase 2: Content Management**
 1.  **Questions Module:**
