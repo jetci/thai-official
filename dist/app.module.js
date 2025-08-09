@@ -9,9 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const announcements_module_1 = require("./announcements/announcements.module");
+const subjects_module_1 = require("./subjects/subjects.module");
 const users_module_1 = require("./users/users.module");
 const auth_module_1 = require("./auth/auth.module");
 const prisma_module_1 = require("./prisma/prisma.module");
+const positions_module_1 = require("./positions/positions.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -22,7 +25,7 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
                 envFilePath: '.env',
             }),
-            auth_module_1.AuthModule, users_module_1.UsersModule, prisma_module_1.PrismaModule
+            announcements_module_1.AnnouncementsModule, subjects_module_1.SubjectsModule, auth_module_1.AuthModule, users_module_1.UsersModule, prisma_module_1.PrismaModule, positions_module_1.PositionsModule
         ],
         controllers: [],
         providers: [],

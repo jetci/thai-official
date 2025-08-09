@@ -6,6 +6,8 @@ import { SubjectsModule } from './subjects/subjects.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { PositionsModule } from './positions/positions.module';
+import { QuestionsModule } from './questions/questions.module';
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true, 
       envFilePath: '.env',
     }),
-    /*AnnouncementsModule, SubjectsModule,*/ AuthModule, UsersModule, PrismaModule
+    AnnouncementsModule, SubjectsModule, AuthModule, UsersModule, PrismaModule, PositionsModule
   ],
   controllers: [],
   providers: [],

@@ -31,6 +31,8 @@ model Subject {
   id   Int    @id @default(autoincrement())
   name String @unique
 
+  questions Question[]
+
   @@map("subjects")
 }
 
@@ -57,4 +59,56 @@ model User {
   role   Role   @relation(fields: [roleId], references: [id])
 
   @@map("users")
+}
+
+model Position {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions PositionQuestion[]
+}
+
+// ตารางเก็บคำถาม
+model Question {
+  id             Int                @id @default(autoincrement())
+  question_text  String
+  // questionType   String             @default("multiple_choice") // Renamed from questionType to match DTO
+  difficulty     String?            @default("medium")
+  created_at     DateTime           @default(now())
+  updated_at     DateTime           @updatedAt
+
+  subject_id Int
+  subject    Subject @relation(fields: [subject_id], references: [id])
+
+  choices   Choice[]
+  positions PositionQuestion[]
+
+  // For consistency with DTOs and service logic
+  @@map("questions")
+}
+
+// ตารางเก็บตัวเลือกสำหรับคำถาม
+model Choice {
+  id          Int     @id @default(autoincrement())
+  choice_text String
+  is_correct  Boolean @default(false)
+
+  question_id Int
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@map("choices")
+}
+
+// ตารางเชื่อมระหว่าง Position และ Question (Many-to-Many)
+model PositionQuestion {
+  position_id Int
+  position    Position @relation(fields: [position_id], references: [id], onDelete: Cascade)
+
+  question_id Int
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@id([position_id, question_id])
+  @@map("position_questions")
 }
