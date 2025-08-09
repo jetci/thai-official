@@ -9,6 +9,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "test": "jest",
+    "test:debug": "jest --runInBand --detectOpenHandles --verbose",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage --coverageReporters=json-summary --outputFile=coverage/coverage-summary.json",
     "test:e2e": "jest --config ./test/jest-e2e.json",
@@ -73,6 +74,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   }
 }
