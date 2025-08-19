@@ -9,14 +9,18 @@
   "scripts": {
     "build": "nest build",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "nest start --watch -r tsconfig-paths/register",
+    "start:dev:sqlite": "npm run start:dev",
     "start:prod": "node dist/main",
     "test": "jest",
     "test:debug": "jest --runInBand --detectOpenHandles --verbose",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage --coverageReporters=json-summary --outputFile=coverage/coverage-summary.json",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:int": "jest --config ./test/jest-e2e.json --testMatch \"**/*.int-spec.ts\" --runInBand --detectOpenHandles --testTimeout=60000",
     "prisma:generate": "prisma generate",
+    "prisma:migrate:sqlite": "prisma migrate dev --name init-sqlite --schema prisma/schema.sqlite.prisma",
+    "prisma:generate:sqlite": "prisma generate --schema prisma/schema.sqlite.prisma",
     "lint": "eslint .",
     "audit:project": "ts-node tools/project-audit.ts",
     "env:check": "ts-node tools/env-check.ts",
@@ -24,7 +28,9 @@
     "mock:api": "prism mock openapi/openapi-v1.yaml --port 4010 --host 0.0.0.0",
     "api:mock": "prism mock openapi/openapi-v1.yaml -p 4010",
     "openapi:lint": "spectral lint openapi/openapi-v1.yaml -r .spectral.yaml",
-    "openapi:export": "ts-node tools/openapi-export.ts"
+    "openapi:export": "ts-node tools/openapi-export.ts",
+    "dev:start:ps": "powershell -ExecutionPolicy Bypass -File scripts/dev-start.ps1",
+    "dev:smoke:ps": "powershell -ExecutionPolicy Bypass -File scripts/dev-smoke.ps1"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -34,6 +40,8 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.4.2",
+    "@nestjs/terminus": "^10.2.3",
+    "@nestjs/throttler": "^6.2.1",
     "@prisma/client": "^5.11.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -41,10 +49,12 @@
     "cookie-parser": "^1.4.7",
     "joi": "^18.0.0",
     "ms": "^2.1.3",
+    "nodemailer": "^7.0.5",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -58,6 +68,7 @@
     "@types/jest": "^29.5.2",
     "@types/ms": "^2.1.0",
     "@types/node": "^20.3.1",
+    "@types/nodemailer": "^6.4.17",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.0",
@@ -68,9 +79,11 @@
     "prisma": "^5.11.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
+    "testcontainers": "^10.9.0",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.1.3",
     "typescript-eslint": "^8.39.0"
   },
@@ -86,12 +99,31 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "questions/**/*.ts",
+      "common/interceptors/**/*.ts",
+      "common/utils/**/*.ts",
+      "!**/*.spec.ts",
+      "!**/*.module.ts",
+      "!**/*.d.ts"
     ],
     "coverageDirectory": "../coverage",
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ],
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^src/(.*)$": "<rootDir>/$1"
+      "^src/(.*)$": "<rootDir>/$1",
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
     }
   }
 }

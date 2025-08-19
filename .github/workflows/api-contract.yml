@@ -1,0 +1,55 @@
+name: API Contract
+
+on:
+  push:
+    paths:
+      - 'openapi/**'
+      - '.spectral.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/api-contract.yml'
+      - 'docs/**'
+  pull_request:
+    paths:
+      - 'openapi/**'
+      - '.spectral.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/api-contract.yml'
+      - 'docs/**'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (CI)
+        run: npm ci
+
+      - name: Audit (moderate threshold)
+        run: npm audit --audit-level=moderate || true
+
+      - name: Lint OpenAPI spec
+        run: npm run openapi:lint
+
+      - name: Start Prism mock in background
+        run: |
+          npx prism mock openapi/openapi-v1.yaml -p 4010 &
+          sleep 3
+
+      - name: Smoke test mock endpoints
+        run: |
+          curl -sSf http://localhost:4010/api/v1/announcements?page=1&pageSize=10 | head -c 200 || exit 1
+          curl -sSf http://localhost:4010/api/v1/subjects | head -c 200 || exit 1
+          curl -sSf http://localhost:4010/api/v1/questions?subjectId=cksubj123 | head -c 200 || exit 1
+
+      - name: Stop Prism mock
+        if: always()
+        run: pkill -f "prism mock" || true

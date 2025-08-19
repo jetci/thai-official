@@ -7,13 +7,17 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(config: ConfigService) {
+    const secret = config.get<string>('JWT_REFRESH_SECRET');
+    if (!secret) {
+      throw new Error('JWT_REFRESH_SECRET is not defined in the environment variables. Please check your .env file.');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
           return req.cookies?.refresh_token;
         },
       ]),
-      secretOrKey: config.get<string>('JWT_REFRESH_SECRET'),
+      secretOrKey: secret,
       passReqToCallback: true,
     });
   }
