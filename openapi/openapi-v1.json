@@ -1,0 +1,820 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Thai Official Prep API",
+    "version": "1.0.0",
+    "description": "The backend API for the One-Stop Service for Government Exams preparation platform, built with NestJS, Prisma, and PostgreSQL."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Local API base path"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "User Login",
+        "description": "Authenticates a user and returns access and refresh tokens.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthLoginBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokens"
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "refreshToken=...; HttpOnly; Path=/; Max-Age=..."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get Current User Profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Retrieves the profile of the currently authenticated user.",
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/announcements": {
+      "get": {
+        "tags": [
+          "Announcements"
+        ],
+        "summary": "Get All Announcements",
+        "description": "Retrieves a paginated list of public announcements.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of announcements.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Announcement"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subjects": {
+      "get": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Get All Subjects",
+        "description": "Retrieves a paginated list of subjects.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of subjects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Subject"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subjects/{id}": {
+      "get": {
+        "tags": [
+          "Subjects"
+        ],
+        "summary": "Get Subject by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "cuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subject details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subject"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subject not found."
+          }
+        }
+      }
+    },
+    "/api/v1/positions": {
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Get All Positions",
+        "description": "Retrieves a paginated list of positions.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of positions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Position"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{id}": {
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Get Position by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "cuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Position details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Position"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Position not found."
+          }
+        }
+      }
+    },
+    "/api/v1/questions": {
+      "get": {
+        "tags": [
+          "Questions"
+        ],
+        "summary": "Get All Questions",
+        "description": "Retrieves a paginated list of questions, optionally filtered by subject.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          },
+          {
+            "$ref": "#/components/parameters/SubjectIdQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of questions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginationResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Question"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/{id}": {
+      "get": {
+        "tags": [
+          "Questions"
+        ],
+        "summary": "Get Question by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "cuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question details with choices.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Question not found."
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/my": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get My Subscriptions",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Retrieves all subscriptions for the currently authenticated user. **RBAC:** Requires `USER` or `ADMIN` role.",
+        "responses": {
+          "200": {
+            "description": "A list of the user's subscriptions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Subscription"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create a Subscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Creates a new subscription for the authenticated user. **RBAC:** Requires `USER` or `ADMIN` role.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "planId": {
+                    "type": "string",
+                    "description": "The ID of the subscription plan."
+                  }
+                },
+                "required": [
+                  "planId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid planId)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "User Logout",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "description": "Clears the refresh token, invalidating the user's session.",
+        "responses": {
+          "200": {
+            "description": "Successful logout"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh Access Token",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "description": "Provides a new access token using a valid refresh token.",
+        "responses": {
+          "200": {
+            "description": "New access token generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokens"
+                }
+              }
+            },
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or expired refresh token"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PageQuery": {
+        "name": "page",
+        "in": "query",
+        "description": "The page number to retrieve.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 1
+        }
+      },
+      "PageSizeQuery": {
+        "name": "pageSize",
+        "in": "query",
+        "description": "The number of items to retrieve per page.",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 10
+        }
+      },
+      "SubjectIdQuery": {
+        "name": "subjectId",
+        "in": "query",
+        "description": "The ID of the subject to filter questions by.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "cuid"
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Access Token for authentication."
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refreshToken",
+        "description": "HttpOnly cookie containing the Refresh Token."
+      }
+    },
+    "schemas": {
+      "AuthLoginBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "AuthTokens": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "format": "jwt"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "string",
+            "example": "Validation failed"
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "details": {
+            "type": "object",
+            "description": "Optional validation error details.",
+            "example": [
+              "email must be an email",
+              "password should not be empty"
+            ]
+          }
+        },
+        "required": [
+          "statusCode",
+          "message",
+          "error"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserProfile": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/User"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "nullable": true
+              },
+              "lastName": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "Announcement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaginationResponse": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array"
+          }
+        }
+      },
+      "Subject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Position": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "text": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            }
+          }
+        }
+      },
+      "Choice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "text": {
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "cuid"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "FREE",
+              "PREMIUM"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "CANCELED",
+              "EXPIRED"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

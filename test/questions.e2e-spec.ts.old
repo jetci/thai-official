@@ -1,0 +1,150 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+
+import { AuthGuard } from '../src/auth/auth.guard';
+
+describe('QuestionsController (e2e) - MOCKED AUTH', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+  let subjectId: string;
+
+  // Mock user objects that AuthGuard will return
+  const adminUser = {
+    id: 'cl-admin-id-123',
+    email: 'admin-e2e@test.com',
+    role: 'ADMIN',
+  };
+
+  const regularUser = {
+    id: 'cl-user-id-456',
+    email: 'user-e2e@test.com',
+    role: 'USER',
+  };
+
+  beforeAll(async () => {
+    console.log('--- [beforeAll] Starting test setup ---');
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+    // Key Change: Override the AuthGuard to mock authentication
+    .overrideGuard(AuthGuard)
+    .useValue({
+      canActivate: (context) => {
+        const req = context.switchToHttp().getRequest();
+        // Attach the mock user to the request
+        // We will switch this user in each test
+        req.user = (req.headers['x-mock-user-role'] === 'admin') ? adminUser : regularUser;
+        return true; // Always allow access
+      },
+    })
+    .compile();
+    console.log('--- [beforeAll] Module compiled ---');
+
+    app = moduleFixture.createNestApplication();
+    prisma = app.get<PrismaService>(PrismaService);
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    await app.init();
+    console.log('--- [beforeAll] App initialized ---');
+
+    // Clean and seed the database
+    await prisma.question.deleteMany();
+    await prisma.subject.deleteMany();
+    const subject = await prisma.subject.create({
+      data: { name: 'E2E Mock Subject', description: 'A subject for mocked e2e testing' },
+    });
+    subjectId = subject.id;
+    console.log(`--- [beforeAll] DB cleaned and seeded. Subject ID: ${subjectId} ---`);
+  });
+
+  afterAll(async () => {
+    console.log('--- [afterAll] Tearing down ---');
+    await prisma.question.deleteMany();
+    await prisma.subject.deleteMany();
+    await app.close();
+    console.log('--- [afterAll] Teardown complete ---');
+  });
+
+  describe('POST /questions', () => {
+    it('should create a question when user is ADMIN (201)', async () => {
+      console.log('--- TEST: [POST /questions] as ADMIN ---');
+      const createQuestionDto = {
+        title: 'What is the capital of Thailand (mocked)?',
+        subjectId: subjectId,
+        choices: [
+          { text: 'Bangkok', isCorrect: true },
+          { text: 'Chiang Mai', isCorrect: false },
+        ],
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/questions')
+        .set('x-mock-user-role', 'admin') // Set header to select the admin mock user
+        .send(createQuestionDto)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('id');
+      expect(response.body.title).toEqual(createQuestionDto.title);
+      expect(response.body.choices).toHaveLength(2);
+    });
+
+    it('should return 403 Forbidden when user is not ADMIN', async () => {
+      console.log('--- TEST: [POST /questions] as USER ---');
+      const createQuestionDto = {
+        title: 'An unauthorized question',
+        subjectId: subjectId,
+        choices: [
+          { text: 'A', isCorrect: true },
+          { text: 'B', isCorrect: false },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .post('/questions')
+        .set('x-mock-user-role', 'user') // Set header to select the regular mock user
+        .send(createQuestionDto)
+        .expect(403);
+    });
+  });
+});
+
+
+    });
+  });
+
+  describe('DELETE /questions/:id', () => {
+    it('should delete a question when user is ADMIN (200)', () => {
+      return request(app.getHttpServer())
+        .delete(`/questions/${questionId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+    });
+
+    it('should return 403 Forbidden when user is not ADMIN', async () => {
+        // First, create a question to delete
+        const dto = {
+            title: 'To be deleted by non-admin',
+            subjectId,
+            choices: [{ text: 'A', isCorrect: true }, { text: 'B', isCorrect: false }],
+        };
+        const res = await request(app.getHttpServer())
+            .post('/questions')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send(dto);
+
+        return request(app.getHttpServer())
+            .delete(`/questions/${res.body.id}`)
+            .set('Authorization', `Bearer ${userToken}`)
+            .expect(403);
+    });
+
+    it('should return 404 Not Found when trying to delete a non-existent question', () => {
+        return request(app.getHttpServer())
+            .delete('/questions/clx000000000000000000000')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .expect(404);
+    });
+  });
+});

@@ -1,8 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export class CreateAnnouncementDto {
+  @ApiProperty({ description: 'The title of the announcement', example: 'New Government Job Posting' })
+  @IsString()
+  @IsNotEmpty()
   title: string;
-  agency?: string;
-  details?: string;
-  application_start_date?: Date;
-  application_end_date?: Date;
-  official_link?: string;
+
+  @ApiProperty({ description: 'The content of the announcement', example: 'We are hiring for a new position...' })
+  @IsString()
+  @IsNotEmpty()
+  content: string;
 }
